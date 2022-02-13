@@ -1,0 +1,149 @@
+<html>
+
+<head>
+    <title>Media Stream Player</title>
+</head>
+
+<body class="hidden-scrollbar">
+    <video id="mediaPlayer"></video>
+    <h4>Settings</h4>
+    <div class="control-panel">
+        <label for="video-src">Video source:</label>
+        <select name="video-src" id="video-select" onchange="updateVideoDevice(this)">
+        </select>
+        <label for="audio-src">Audio source:</label>
+        <select name="audio-src" id="audio-select" onchange="updateAudioDevice(this)">
+        </select>
+        <label for="video-height">Max height:</label>
+        <input type="number" name="video-height" id="height-select" onchange="updateHeight(this)">
+        <label for="video-width">Max width:</label>
+        <input type="number" name="video-width" id="width-select" onchange="updateWidth(this)">
+        <label for="immerse-toggle">Hide scrollbar</label>
+        <input type="checkbox" name="immerse-toggle" id="immerse-toggle" checked onchange="updateImmersion(this)">
+    </div>
+    <small>Made by a bre</small>
+</body>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Brush Script MT', cursive;
+    }
+
+    .control-panel {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        grid-template-rows: repeat(6, 1fr);
+        align-items: center;
+        max-width: fit-content;
+    }
+
+    .hidden-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hidden-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+<script>
+    const player = document.querySelector('#mediaPlayer')
+    let videoDeviceId = ""
+    let audioDeviceId = ""
+    let height = 0
+    let width = 0
+    const heightSelector = document.querySelector('#height-select')
+    const widthSelector = document.querySelector('#width-select')
+    let delayRefresh = null
+    __init__()
+
+    function __init__() {
+        reportWindowSize()
+        window.addEventListener('resize', reportWindowSize)
+
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                const videoSelect = document.querySelector('#video-select')
+                let videoOptions = "<option value=''>None</option>"
+                const audioSelect = document.querySelector('#audio-select')
+                let audioOptions = "<option value=''>None</option>"
+                devices.forEach(device => {
+                    // console.log(device)
+                    if (device.kind === 'videoinput') {
+                        videoOptions += `<option value="${device.deviceId}">${device.label}</option>`
+                    } else if (device.kind === 'audioinput') {
+                        audioOptions += `<option value="${device.deviceId}">${device.label}</option>`
+                    }
+                })
+                videoSelect.innerHTML = videoOptions
+                audioSelect.innerHTML = audioOptions
+            })
+    }
+
+    function resizing(delay) {
+        clearTimeout(delayRefresh)
+        delayRefresh = setTimeout(() => {
+            startStream()
+        }, delay)
+    }
+    function reportWindowSize() {
+        height = window.innerHeight
+        width = window.innerWidth
+        heightSelector.value = window.innerHeight
+        widthSelector.value = window.innerWidth
+        resizing(100)
+    }
+
+    function updateVideoDevice(select) {
+        player.srcObject = null
+        videoDeviceId = select.value
+        startStream()
+    }
+    function updateAudioDevice(select) {
+        player.srcObject = null
+        audioDeviceId = select.value
+        startStream()
+    }
+    function updateHeight(e) {
+        height = e.value
+        resizing(10)
+    }
+    function updateWidth(e) {
+        width = e.value
+        resizing(10)
+    }
+    function updateImmersion(e) {
+        const body = document.querySelector('body')
+        if (e.checked) {
+            body.classList.add('hidden-scrollbar')
+        } else {
+            body.classList.remove('hidden-scrollbar')
+        }
+    }
+
+    function startStream() {
+        navigator.mediaDevices.getUserMedia(
+            {
+                video: videoDeviceId ? {
+                    deviceId: { exact: videoDeviceId },
+                    width: width,
+                    height: height
+                } : false,
+                audio: audioDeviceId ? {
+                    deviceId: { exact: audioDeviceId },
+                } : false
+            }
+        )
+            .then(stream => {
+                player.srcObject = stream
+                player.onloadedmetadata = (e) => {
+                    player.play()
+                }
+            })
+            .catch(e => {
+                console.log(e)
+            })
+    }
+</script>
+
+</html>
