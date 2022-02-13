@@ -10,9 +10,11 @@
     <div class="control-panel">
         <label for="video-src">Video source:</label>
         <select name="video-src" id="video-select" onchange="updateVideoDevice(this)">
+            <option value=''>None</option>
         </select>
         <label for="audio-src">Audio source:</label>
         <select name="audio-src" id="audio-select" onchange="updateAudioDevice(this)">
+            <option value=''>None</option>
         </select>
         <label for="video-height">Max height:</label>
         <input type="number" name="video-height" id="height-select" onchange="updateHeight(this)">
@@ -61,22 +63,25 @@
         reportWindowSize()
         window.addEventListener('resize', reportWindowSize)
 
-        navigator.mediaDevices.enumerateDevices()
-            .then(devices => {
-                const videoSelect = document.querySelector('#video-select')
-                let videoOptions = "<option value=''>None</option>"
-                const audioSelect = document.querySelector('#audio-select')
-                let audioOptions = "<option value=''>None</option>"
-                devices.forEach(device => {
-                    // console.log(device)
-                    if (device.kind === 'videoinput') {
-                        videoOptions += `<option value="${device.deviceId}">${device.label}</option>`
-                    } else if (device.kind === 'audioinput') {
-                        audioOptions += `<option value="${device.deviceId}">${device.label}</option>`
-                    }
-                })
-                videoSelect.innerHTML = videoOptions
-                audioSelect.innerHTML = audioOptions
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                navigator.mediaDevices.enumerateDevices()
+                    .then(devices => {
+                        const videoSelect = document.querySelector('#video-select')
+                        const audioSelect = document.querySelector('#audio-select')
+                        devices.forEach(device => {
+                            // console.log(device)
+                            if (device.kind === 'videoinput') {
+                                videoSelect.innerHTML += `<option value="${device.deviceId}">${device.label}</option>`
+                            } else if (device.kind === 'audioinput') {
+                                audioSelect.innerHTML += `<option value="${device.deviceId}">${device.label}</option>`
+                            }
+                        })
+                    })
+            })
+            .catch(e => {
+                alert("Permission required to work")
+                console.error(e)
             })
     }
 
