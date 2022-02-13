@@ -2,7 +2,7 @@
 
 <head>
     <title>Media Stream Player</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
 <body class="hidden-scrollbar">
@@ -81,8 +81,9 @@
                     })
             })
             .catch(e => {
-                alert("Permission required to work")
                 console.error(e)
+                alert("Permission required to work")
+                location.reload()
             })
     }
 
