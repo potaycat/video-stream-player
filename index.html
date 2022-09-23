@@ -1,8 +1,9 @@
 <html>
 
 <head>
-    <title>Media Stream Player</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>Video Stream Player</title>
+    <link rel="icon" href="assets/icons/icon-48x48.png">
+    <link rel="manifest" href="vsp.webmanifest" />
 </head>
 
 <body class="hidden-scrollbar">
@@ -29,7 +30,7 @@
 <style>
     body {
         margin: 0;
-        font-family: 'Brush Script MT', cursive;
+        font-family: 'Trebuchet MS', sans-serif;
     }
 
     .control-panel {
@@ -150,6 +151,10 @@
             .catch(e => {
                 console.log(e)
             })
+    }
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js');
     }
 </script>
 
