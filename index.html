@@ -1,44 +1,114 @@
 <html>
 
 <head>
-    <title>Video Stream Player</title>
+    <title>Reeeon Video Capturer</title>
     <link rel="icon" href="assets/icons/icon-48x48.png">
     <link rel="manifest" href="vsp.webmanifest" />
 </head>
 
 <body class="hidden-scrollbar">
     <video id="mediaPlayer"></video>
-    <h4>Settings</h4>
-    <div class="control-panel">
-        <label for="video-src">Video source:</label>
-        <select name="video-src" id="video-select" onchange="updateVideoDevice(this)">
-            <option value=''>None</option>
-        </select>
-        <label for="audio-src">Audio source:</label>
-        <select name="audio-src" id="audio-select" onchange="updateAudioDevice(this)">
-            <option value=''>None</option>
-        </select>
-        <label for="video-height">Max height:</label>
-        <input type="number" name="video-height" id="height-select" onchange="updateHeight(this)">
-        <label for="video-width">Max width:</label>
-        <input type="number" name="video-width" id="width-select" onchange="updateWidth(this)">
-        <label for="immerse-toggle">Hide scrollbar</label>
-        <input type="checkbox" name="immerse-toggle" id="immerse-toggle" checked onchange="updateImmersion(this)">
+    <div class="control-panel-ctnr hidden">
+        <h4>Settings</h4>
+        <div class="control-panel">
+            <label for="video-src">Video source:</label>
+            <select name="video-src" id="video-select" onchange="updateVideoDevice(this)">
+                <option value=''>None</option>
+            </select>
+            <label for="audio-src">Audio source:</label>
+            <select name="audio-src" id="audio-select" onchange="updateAudioDevice(this)">
+                <option value=''>None</option>
+            </select>
+            <label for="video-height">Max height:</label>
+            <div>
+                <input type="number" name="video-height" id="height-select" onchange="updateHeight(this)"> px
+            </div>
+            <label for="video-width">Max width:</label>
+            <div>
+                <input type="number" name="video-width" id="width-select" onchange="updateWidth(this)"> px
+            </div>
+            &nbsp;<div class="check-option">
+                <input type="checkbox" name="immerse-toggle" id="immerse-toggle" checked
+                    onchange="updateImmersion(this)">
+                <label for="immerse-toggle">Hide scrollbar</label>
+            </div>
+        </div>
+        <!-- <small>Made by a bre</small> -->
     </div>
-    <small>Made by a bre</small>
 </body>
 <style>
     body {
         margin: 0;
         font-family: 'Trebuchet MS', sans-serif;
+        background: #221e29;
+        color: white;
+    }
+
+    #mediaPlayer {
+        box-shadow: rgba(0, 0, 0, 0.15) 1.9px 1.9px 2.6px;
+    }
+
+    .control-panel-ctnr {
+        padding: 0 30px;
+        user-select: none;
     }
 
     .control-panel {
         display: grid;
         grid-template-columns: 1fr 2fr;
         grid-template-rows: repeat(6, 1fr);
+        grid-gap: 8px 7px;
         align-items: center;
         max-width: fit-content;
+        font-size: 13px;
+    }
+
+    .control-panel label {
+        justify-self: end;
+        font-size: 14px;
+    }
+
+    .control-panel input:not([type='checkbox']),
+    .control-panel select {
+        border: none;
+        border-radius: 5px;
+        color: white;
+        outline: none;
+        padding: 2px 8px;
+        background: #232323;
+        box-shadow: inset rgba(255, 255, 255, 0.4) 0 -0.4px, inset rgba(255, 255, 255, 0.2) 0 0.3px;
+    }
+
+    .control-panel select {
+        max-width: 250px;
+        padding: 2px 4px;
+        background: #59565f;
+        box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px, inset rgba(255, 255, 255, 0.4) 0 0.4px;
+    }
+
+    .control-panel #height-select,
+    .control-panel #width-select {
+        max-width: 100px;
+    }
+
+    .control-panel .check-option {
+        position: relative;
+    }
+
+    .check-option input {
+        width: 14px;
+        height: 14px;
+        margin: 0;
+    }
+
+    .check-option label {
+        position: absolute;
+        top: 0px;
+        left: 22px;
+    }
+
+    .hidden {
+        display: none;
     }
 
     .hidden-scrollbar::-webkit-scrollbar {
@@ -79,6 +149,7 @@
                                 audioSelect.innerHTML += `<option value="${device.deviceId}">${device.label}</option>`
                             }
                         })
+                        document.querySelector('.control-panel-ctnr').classList.remove('hidden')
                     })
             })
             .catch(e => {
@@ -130,6 +201,9 @@
     }
 
     function startStream() {
+        if (!(videoDeviceId || audioDeviceId)) {
+            return
+        }
         navigator.mediaDevices.getUserMedia(
             {
                 video: videoDeviceId ? {
@@ -154,7 +228,7 @@
     }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js');
+        navigator.serviceWorker.register('./sw.js')
     }
 </script>
 

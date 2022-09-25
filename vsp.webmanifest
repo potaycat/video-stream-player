@@ -1,7 +1,11 @@
 {
-    "name": "Video Stream Player",
+    "name": "Reeeon Video Capturer",
     "short_name": "Stream Play",
     "description": "PWA for playing streams from USB or webcam.",
+    "start_url": "/index.html",
+    "display": "fullscreen",
+    "theme_color": "#38343c",
+    "background_color": "#221e29",
     "icons": [
         {
             "src": "assets/icons/icon-72x72.png",
@@ -51,9 +55,5 @@
             "type": "image/png",
             "purpose": "maskable any"
         }
-    ],
-    "start_url": "/index.html",
-    "display": "fullscreen",
-    "theme_color": "#6E068A",
-    "background_color": "#fafafa"
+    ]
 }
