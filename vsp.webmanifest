@@ -1,7 +1,7 @@
 {
     "name": "Reeeon Video Capturer",
-    "short_name": "Stream Play",
-    "description": "PWA for playing streams from USB or webcam.",
+    "short_name": "Reeeon Capturer",
+    "description": "PWA for displaying your capture card video in a ready-to-stream window.",
     "start_url": "/index.html",
     "display": "fullscreen",
     "theme_color": "#38343c",

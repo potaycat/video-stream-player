@@ -8,6 +8,16 @@
 
 <body class="hidden-scrollbar">
     <video id="mediaPlayer"></video>
+    <div class="intro">
+        <h3>Welcome to Reeeon Video Capturer</h3>
+        <h4>Display your capture card video in a ready-to-stream window.</h4>
+        <p>
+            Important:<br>
+            - Camera permission is required for capture cards to work.<br>
+            - No video data is transmitted to the internet.
+        </p>
+        <button class="scan-btn" onclick="scan()">Got it</button>
+    </div>
     <div class="control-panel-ctnr hidden">
         <h4>Settings</h4>
         <div class="control-panel">
@@ -46,6 +56,10 @@
 
     #mediaPlayer {
         box-shadow: rgba(0, 0, 0, 0.15) 1.9px 1.9px 2.6px;
+    }
+
+    .intro {
+        padding: 0 30px;
     }
 
     .control-panel-ctnr {
@@ -122,6 +136,7 @@
 </style>
 <script>
     const player = document.querySelector('#mediaPlayer')
+    const stream = null
     let videoDeviceId = ""
     let audioDeviceId = ""
     let height = 0
@@ -134,9 +149,20 @@
     function __init__() {
         reportWindowSize()
         window.addEventListener('resize', reportWindowSize)
+        if ('serviceWorker' in navigator) {
+            a = true
+            // a = location.hostname == "localhost" || location.hostname == "127.0.0.1"
+            if (a) {
+                navigator.serviceWorker.register('./sw.js')
+            }
+        }
+    }
 
+    function scan() {
+        document.querySelector('.scan-btn').disabled = true
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then(stream => {
+                stream.getTracks().forEach(tr => tr.stop())
                 navigator.mediaDevices.enumerateDevices()
                     .then(devices => {
                         const videoSelect = document.querySelector('#video-select')
@@ -149,12 +175,13 @@
                                 audioSelect.innerHTML += `<option value="${device.deviceId}">${device.label}</option>`
                             }
                         })
+                        document.querySelector('.intro').classList.add('hidden')
                         document.querySelector('.control-panel-ctnr').classList.remove('hidden')
                     })
             })
             .catch(e => {
                 console.error(e)
-                alert("Permission required to work")
+                alert("Cannot scan for devices.")
                 location.reload()
             })
     }
@@ -201,7 +228,11 @@
     }
 
     function startStream() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(tr => tr.stop())
+        }
         if (!(videoDeviceId || audioDeviceId)) {
+            this.stream = null
             return
         }
         navigator.mediaDevices.getUserMedia(
@@ -217,6 +248,7 @@
             }
         )
             .then(stream => {
+                this.stream = stream
                 player.srcObject = stream
                 player.onloadedmetadata = (e) => {
                     player.play()
@@ -225,10 +257,6 @@
             .catch(e => {
                 console.log(e)
             })
-    }
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
     }
 </script>
 
