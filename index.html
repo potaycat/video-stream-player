@@ -10,10 +10,11 @@
     <video id="mediaPlayer"></video>
     <div class="intro">
         <h3>Welcome to Reeeon Video Capturer</h3>
-        <h4>Display your capture card video in a ready-to-stream window.</h4>
+        <h4>Display your video source in a ready-to-stream window.</h4>
+        <sub>Play well with Discord, OBS, capture cards,...</sub><br><br>
         <p>
             Important:<br>
-            - Camera permission is required for capture cards to work.<br>
+            - Camera permission is required.<br>
             - No video data is transmitted to the internet.
         </p>
         <button class="scan-btn" onclick="scan()">Got it</button>
@@ -29,13 +30,21 @@
             <select name="audio-src" id="audio-select" onchange="updateAudioDevice(this)">
                 <option value=''>None</option>
             </select>
-            <label for="video-height">Max height:</label>
-            <div>
+            <label for="audio-out">Route audio to:</label>
+            <select name="audio-out" id="audio-out-select" onchange="setSinkDevice(this)">
+            </select>
+            <label class="vsize" for="video-height">Max height:</label>
+            <div class="vsize">
                 <input type="number" name="video-height" id="height-select" onchange="updateHeight(this)"> px
             </div>
-            <label for="video-width">Max width:</label>
-            <div>
+            <label class="vsize" for="video-width">Max width:</label>
+            <div class="vsize">
                 <input type="number" name="video-width" id="width-select" onchange="updateWidth(this)"> px
+            </div>
+            &nbsp;<div class="check-option">
+                <input type="checkbox" name="immerse-toggle" id="immerse-toggle" checked
+                    onchange="toggleFitWindow(this)">
+                <label for="video-size-toggle">Auto fit to window</label>
             </div>
             &nbsp;<div class="check-option">
                 <input type="checkbox" name="immerse-toggle" id="immerse-toggle" checked
@@ -70,7 +79,7 @@
     .control-panel {
         display: grid;
         grid-template-columns: 1fr 2fr;
-        grid-template-rows: repeat(6, 1fr);
+        grid-template-rows: repeat(8, 1fr);
         grid-gap: 8px 7px;
         align-items: center;
         max-width: fit-content;
@@ -147,14 +156,29 @@
     __init__()
 
     function __init__() {
-        reportWindowSize()
-        window.addEventListener('resize', reportWindowSize)
+        toggleFitWindow({ checked: true })
         if ('serviceWorker' in navigator) {
             a = true
             // a = location.hostname == "localhost" || location.hostname == "127.0.0.1"
             if (a) {
                 navigator.serviceWorker.register('./sw.js')
             }
+        }
+    }
+
+    function toggleFitWindow(e) {
+        elems = document.querySelectorAll('.vsize')
+        if (e.checked) {
+            reportWindowSize()
+            window.addEventListener('resize', reportWindowSize)
+            elems.forEach(elem => {
+                elem.classList.add('hidden')
+            })
+        } else {
+            window.removeEventListener('resize', reportWindowSize)
+            elems.forEach(elem => {
+                elem.classList.remove('hidden')
+            })
         }
     }
 
@@ -167,12 +191,15 @@
                     .then(devices => {
                         const videoSelect = document.querySelector('#video-select')
                         const audioSelect = document.querySelector('#audio-select')
+                        const audioOutSelect = document.querySelector('#audio-out-select')
                         devices.forEach(device => {
                             // console.log(device)
                             if (device.kind === 'videoinput') {
                                 videoSelect.innerHTML += `<option value="${device.deviceId}">${device.label}</option>`
                             } else if (device.kind === 'audioinput') {
                                 audioSelect.innerHTML += `<option value="${device.deviceId}">${device.label}</option>`
+                            } else if (device.kind === 'audiooutput') {
+                                audioOutSelect.innerHTML += `<option value="${device.deviceId}">${device.label}</option>`
                             }
                         })
                         document.querySelector('.intro').classList.add('hidden')
@@ -184,6 +211,10 @@
                 alert("Cannot scan for devices.")
                 location.reload()
             })
+    }
+
+    function setSinkDevice(select) {
+        player.setSinkId(select.value)
     }
 
     function resizing(delay) {
@@ -244,6 +275,8 @@
                 } : false,
                 audio: audioDeviceId ? {
                     deviceId: { exact: audioDeviceId },
+                    echoCancellation: false,
+                    noiseSuppression: false,
                 } : false
             }
         )
